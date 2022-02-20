@@ -8,7 +8,7 @@ export default function Auth() {
     const [newAccount, setNewAccount] = useState<boolean>(true)
 
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const {target: {name, value}} = e
+        const {name, value} = e.target
         if (name === "email") {
             setEmail(value)
         } else if (name === "password") {
@@ -43,8 +43,7 @@ export default function Auth() {
     }
 
     const onSocialChick = async (e: React.MouseEvent<HTMLButtonElement>) => {
-        const target = e.target as HTMLButtonElement;
-        const name = target.name;
+        const {name} = e.target as HTMLButtonElement;
         let provider!: firebase.auth.AuthProvider;
         if (name === "google") {
             provider = new firebaseInstance.auth.GoogleAuthProvider()
