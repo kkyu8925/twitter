@@ -16,8 +16,6 @@ export default function Tweet({tweet, isOwner}: { tweet: ITweet, isOwner: boolea
         const flag = window.confirm("Are you sure you want to delete this tweet?");
         if (flag) {
             await dbService.doc(`twitter/${tweet.id}`).delete().then();
-        } else {
-
         }
     }
     const toggleEditing = () => setEditing((prev) => !prev)
