@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import AppRouter from "components/Router";
-import {authService} from "../firebase";
-
+import {authService} from "firebaseConfig";
 
 function App() {
     const [init, setInit] = useState<boolean>(false);
@@ -14,7 +13,6 @@ function App() {
             } else {
                 setIsLoggedIn(false);
             }
-            console.log("setInit()")
             setInit(true);
         })
     }, []);

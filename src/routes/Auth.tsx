@@ -1,7 +1,6 @@
 import React, {useState} from "react";
-import {authService} from "../firebase";
+import {authService, firebaseInstance} from "firebaseConfig";
 import firebase from "firebase/compat";
-import UserCredential = firebase.auth.UserCredential;
 
 export default function Auth() {
     const [email, setEmail] = useState<string>("")
@@ -19,7 +18,7 @@ export default function Auth() {
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         try {
-            let data: UserCredential
+            let data: firebase.auth.UserCredential
             if (newAccount) {
                 // create
                 data = await authService.createUserWithEmailAndPassword(
@@ -41,6 +40,18 @@ export default function Auth() {
 
     const toggleAccount = () => {
         setNewAccount((prev) => !prev);
+    }
+
+    const onSocialChick = async (e: React.MouseEvent<HTMLButtonElement>) => {
+        const target = e.target as HTMLButtonElement;
+        const name = target.name;
+        let provider!: firebase.auth.AuthProvider;
+        if (name === "google") {
+            provider = new firebaseInstance.auth.GoogleAuthProvider()
+        } else if (name === "github") {
+            provider = new firebaseInstance.auth.GithubAuthProvider()
+        }
+        await authService.signInWithPopup(provider);
     }
 
     return (
@@ -68,8 +79,8 @@ export default function Auth() {
                 {newAccount ? "Sign in" : "Sing up"}
             </span>
             <div>
-                <button>Continue with Google</button>
-                <button>Continue with Github</button>
+                <button name={"google"} onClick={onSocialChick}>Continue with Google</button>
+                <button name={"github"} onClick={onSocialChick}>Continue with Github</button>
             </div>
         </div>
     )
