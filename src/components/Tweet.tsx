@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import {dbService, storageService} from "../firebaseConfig";
+import {dbService, storageService} from "firebaseConfig";
 
 interface ITweet {
     text: string;

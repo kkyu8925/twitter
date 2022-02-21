@@ -1,7 +1,5 @@
-type User = {
+export type TUser = {
     displayName: string;
     uid: string;
     updateProfile: Function;
-}
-
-export default User;
+};

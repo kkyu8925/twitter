@@ -4,10 +4,10 @@ import Auth from "routes/Auth";
 import Home from "routes/Home";
 import Navigation from "components/Navigation";
 import Profile from "routes/Profile";
-import User from "models/User";
+import {TUser} from "models/User";
 
 interface IProps {
-    userObj?: User | null;
+    userObj?: TUser | null;
     refreshUser: Function;
 }
 

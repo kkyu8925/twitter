@@ -1,16 +1,16 @@
 import React, {useEffect, useState} from 'react';
 import AppRouter from "components/Router";
 import {authService} from "firebaseConfig";
-import User from "models/User";
 import firebase from "firebase/compat/app";
+import {TUser} from "models/User";
 
 function App() {
     const [init, setInit] = useState<boolean>(false);
-    const [userObj, setUserObj] = useState<User | null>();
+    const [userObj, setUserObj] = useState<TUser | null>();
 
     const setFirebaseUserToUser = (user: firebase.User | null) => {
         if (user !== null) {
-            const userInfo: User = {
+            const userInfo: TUser = {
                 displayName: user.displayName!,
                 uid: user.uid,
                 updateProfile: (args: any) => user.updateProfile(args)
@@ -27,6 +27,7 @@ function App() {
             setInit(true);
         })
     }, []);
+
     const refreshUser = () => {
         const getCurrentUser = authService.currentUser;
         setFirebaseUserToUser(getCurrentUser);
