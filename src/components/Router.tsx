@@ -4,22 +4,22 @@ import Auth from "routes/Auth";
 import Home from "routes/Home";
 import Navigation from "components/Navigation";
 import Profile from "routes/Profile";
-import firebase from "firebase/compat";
+import User from "models/User";
 
 interface IProps {
-    isLoggedIn: boolean;
-    userObj: firebase.User | null;
+    userObj?: User | null;
+    refreshUser: Function;
 }
 
-export default function AppRouter({isLoggedIn, userObj}: IProps) {
+export default function AppRouter({userObj, refreshUser}: IProps) {
     return (
         <Router>
-            {isLoggedIn && <Navigation/>}
+            {userObj && <Navigation userObj={userObj}/>}
             <Routes>
-                {isLoggedIn ? (
+                {userObj ? (
                     <>
                         <Route path={"/"} element={<Home userObj={userObj}/>}/>
-                        <Route path={"/profile"} element={<Profile/>}/>
+                        <Route path={"/profile"} element={<Profile userObj={userObj} refreshUser={refreshUser}/>}/>
                     </>
                 ) : (
                     <>

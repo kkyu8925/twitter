@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from "react";
-import {dbService} from "../firebaseConfig";
-import firebase from "firebase/compat";
+import {dbService, storageService} from "../firebaseConfig";
 import Tweet from "components/Tweet";
 import {
     collection,
@@ -9,51 +8,24 @@ import {
     orderBy,
     query
 } from 'firebase/firestore';
-
+import {v4 as uuidv4} from 'uuid';
+import User from "../models/User";
 
 interface ISetTwitterDto {
     text: string;
     createdAt: number;
-    createdId?: string
+    createdId: string;
+    imageUrl: string;
 }
 
 interface IGetTwitterDto extends ISetTwitterDto {
     id: string
 }
 
-export default function Home({userObj}: { userObj: firebase.User | null }) {
+export default function Home({userObj}: { userObj: User }) {
     const [text, setText] = useState<string>("");
     const [twitters, setTwitters] = useState<IGetTwitterDto[]>([]);
-
-    // const getTwitters = async () => {
-    //     const dbCollectionTwitter = await dbService.collection("twitter").get()
-    //     dbCollectionTwitter.forEach((document) => {
-    //             const twitter: getTwitterDto = {
-    //                 text: document.data().text,
-    //                 createdAt: document.data().createdAt,
-    //                 createdId: document.data().createdId,
-    //                 id: document.id
-    //             }
-    //             setTwitters((twitters) => [twitter, ...twitters])
-    //         }
-    //     )
-    // }
-
-    // useEffect(() => {
-    //     // getTwitters().then();
-    //     dbService.collection("twitter").onSnapshot(snapshot => {
-    //         snapshot.docs.map((document) => {
-    //             console.log(document)
-    //             const twitter: getTwitterDto = {
-    //                 text: document.data().text,
-    //                 createdAt: document.data().createdAt,
-    //                 createdId: document.data().createdId,
-    //                 id: document.id
-    //             }
-    //             setTwitters((twitters: getTwitterDto[]) => [twitter, ...twitters])
-    //         })
-    //     })
-    // }, [])
+    const [attachment, setAttachment] = useState<any>("");
 
     useEffect(() => {
         const q = query(
@@ -66,7 +38,8 @@ export default function Home({userObj}: { userObj: firebase.User | null }) {
                     text: doc.data().text,
                     createdAt: doc.data().createdAt,
                     createdId: doc.data().createdId,
-                    id: doc.id
+                    id: doc.id,
+                    imageUrl: doc.data().imageUrl
                 };
                 return twitter;
             });
@@ -78,20 +51,49 @@ export default function Home({userObj}: { userObj: firebase.User | null }) {
         };
     }, []);
 
-    const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
+    const onSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (userObj?.uid === undefined) {
+            alert("Error! please again login")
+            return
+        }
+        let imageUrl: string = "";
+        if (attachment !== "") {
+            const fileRef = storageService.ref().child(`${userObj.uid}/${uuidv4()}`)
+            const response = await fileRef.putString(attachment, "data_url");
+            imageUrl = await response.ref.getDownloadURL();
+        }
         const data: ISetTwitterDto = {
             text: text,
             createdAt: Date.now(),
-            createdId: userObj?.uid
+            createdId: userObj.uid,
+            imageUrl: imageUrl
         }
         await dbService.collection("twitter").add(data)
         setText("")
+        setAttachment(null);
     };
     const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const {value} = e.target;
         setText(value);
     };
+    const onFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const {target: {files}} = e;
+
+        if (!files?.length) {
+            return;
+        }
+
+        const file = files[0];
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setAttachment(reader.result)
+        }
+        reader.readAsDataURL(file);
+    }
+    const onClearAttachment = () => {
+        setAttachment(null);
+    }
 
     return (
         <div>
@@ -103,7 +105,14 @@ export default function Home({userObj}: { userObj: firebase.User | null }) {
                     placeholder={"What's on your mind?"}
                     maxLength={120}
                 />
+                <input type={"file"} accept={"image/*"} onChange={onFileChange}/>
                 <input type={"submit"} value={"twitter"}/>
+                {attachment && (
+                    <div>
+                        <img src={attachment} width={"50px"} height={"50px"} alt={"Upload"}/>
+                        <button onClick={onClearAttachment}>Clear Image</button>
+                    </div>
+                )}
             </form>
             <div>
                 {twitters.map(tweet => (

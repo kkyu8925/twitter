@@ -1,11 +1,12 @@
 import React, {useState} from "react";
-import {dbService} from "../firebaseConfig";
+import {dbService, storageService} from "../firebaseConfig";
 
 interface ITweet {
     text: string;
     createdAt: number;
-    createdId?: string;
+    createdId: string;
     id: string;
+    imageUrl: string;
 }
 
 export default function Tweet({tweet, isOwner}: { tweet: ITweet, isOwner: boolean }) {
@@ -16,6 +17,7 @@ export default function Tweet({tweet, isOwner}: { tweet: ITweet, isOwner: boolea
         const flag = window.confirm("Are you sure you want to delete this tweet?");
         if (flag) {
             await dbService.doc(`twitter/${tweet.id}`).delete().then();
+            await storageService.refFromURL(tweet.imageUrl).delete();
         }
     }
     const toggleEditing = () => setEditing((prev) => !prev)
@@ -50,6 +52,7 @@ export default function Tweet({tweet, isOwner}: { tweet: ITweet, isOwner: boolea
             ) : (
                 <>
                     <h4>{tweet.text}</h4>
+                    {tweet.imageUrl && <img src={tweet.imageUrl} alt={"Tweet Img"} width={"50px"} height={"50px"}/>}
                     {isOwner && (
                         <>
                             <button onClick={onDeleteClick}>Delete</button>
